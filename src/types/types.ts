@@ -1,5 +1,6 @@
-import {IUser} from "../models";
-import {Request} from "express";
+import { Request } from 'express';
+
+import { IUser } from '../models';
 
 export interface JwtPayload {
     id: string;

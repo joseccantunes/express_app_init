@@ -1,18 +1,17 @@
-import jwt from 'jsonwebtoken';
-import {Request, Response, NextFunction} from 'express';
-
-import {IUser, User} from '../models';
-import catchAsync from "../utility/catchAsync";
-import Email from '../utility/email';
-import AppError from "../utility/appError";
-import * as express from "express";
-import {protect} from "../utility/authorization";
 import crypto from 'crypto';
-import {AppRequest} from "../types/types";
 
+import * as express from 'express';
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+
+import { IUser, User } from '../models';
+import { AppRequest } from '../types/types';
+import AppError from '../utility/appError';
+import { protect } from '../utility/authorization';
+import catchAsync from '../utility/catchAsync';
 
 export class AuthController {
-    path = "/auth";
+    path = '/auth';
     router = express.Router();
 
     constructor() {
@@ -20,7 +19,7 @@ export class AuthController {
     }
 
     initRoutes() {
-        this.router.post(this.path + "/signup", this.signup);
+        this.router.post(this.path + '/signup', this.signup);
         this.router.post(this.path + '/login', this.login);
         this.router.get(this.path + '/logout', this.logout);
 
@@ -36,20 +35,17 @@ export class AuthController {
         this.router.delete(this.path, this.deleteUsers);*/
     }
 
-
     signToken = (id: string) => {
-        return jwt.sign({id}, process.env.JWT_SECRET as string, {
+        return jwt.sign({ id }, process.env.JWT_SECRET as string, {
             expiresIn: process.env.JWT_EXPIRES_IN,
         });
-    }
+    };
 
     createSendToken = (user: Partial<IUser>, statusCode: number, resp: Response) => {
         const token = this.signToken(user._id as string);
 
         const cookieOptions: Record<string, any> = {
-            expires: new Date(
-                Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN as string, 10) * 24 * 60 * 60 * 1000
-            ),
+            expires: new Date(Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN as string, 10) * 24 * 60 * 60 * 1000),
             httpOnly: true,
         };
 
@@ -67,8 +63,7 @@ export class AuthController {
                 user,
             },
         });
-    }
-
+    };
 
     signup = catchAsync(async (req: Request, resp: Response, next: NextFunction) => {
         await User.init();
@@ -86,13 +81,13 @@ export class AuthController {
     });
 
     login = catchAsync(async (req: Request, resp: Response, next: NextFunction) => {
-        const {email, password} = req.body;
+        const { email, password } = req.body;
 
         if (!email || !password) {
             return next(new AppError('Please provide email and password!', 400));
         }
 
-        const user = await User.findOne({email}).select('+password');
+        const user = await User.findOne({ email }).select('+password');
 
         if (!user || !(await user.correctPassword(password, user.password))) {
             return next(new AppError('Incorrect email or password', 401));
@@ -101,24 +96,22 @@ export class AuthController {
         this.createSendToken(user, 200, resp);
     });
 
-
     logout = (req: Request, resp: Response) => {
         resp.cookie('jwt', 'loggedout', {
             expires: new Date(Date.now() + 10 * 1000),
             httpOnly: true,
         });
-        resp.status(200).json({status: 'success'});
+        resp.status(200).json({ status: 'success' });
     };
 
-
     forgotPassword = catchAsync(async (req: Request, resp: Response, next: NextFunction) => {
-        const user = await User.findOne({email: req.body.email});
+        const user = await User.findOne({ email: req.body.email });
         if (!user) {
             return next(new AppError('There is no user with email address.', 404));
         }
 
         const resetToken = user.createPasswordResetToken();
-        await user.save({validateBeforeSave: false});
+        await user.save({ validateBeforeSave: false });
 
         try {
             const resetURL = `${req.protocol}://${req.get('host')}/api/auth/resetPassword/${resetToken}`;
@@ -132,7 +125,7 @@ export class AuthController {
         } catch (err) {
             user.passwordResetToken = undefined;
             user.passwordResetExpires = undefined;
-            await user.save({validateBeforeSave: false});
+            await user.save({ validateBeforeSave: false });
 
             return next(new AppError('There was an error sending the email. Try again later!', 500));
         }
@@ -143,7 +136,7 @@ export class AuthController {
 
         const user = await User.findOne({
             passwordResetToken: hashedToken,
-            passwordResetExpires: {$gt: Date.now()},
+            passwordResetExpires: { $gt: Date.now() },
         });
 
         if (!user) {
@@ -172,5 +165,4 @@ export class AuthController {
 
         this.createSendToken(user, 200, resp);
     });
-
 }

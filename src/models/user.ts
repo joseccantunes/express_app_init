@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+
 import bcrypt from 'bcryptjs';
-import {Document, model, Query, Schema} from 'mongoose';
+import { Document, model, Query, Schema } from 'mongoose';
 import validator from 'validator';
 
 // Define an interface for the User document
@@ -92,10 +93,7 @@ userSchema.pre<Query<any, IUser>>(/^find/, function (next) {
 });
 
 // Instance method to check if passwords match
-userSchema.methods.correctPassword = async function (
-    candidatePassword: string,
-    userPassword: string
-): Promise<boolean> {
+userSchema.methods.correctPassword = async function (candidatePassword: string, userPassword: string): Promise<boolean> {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 
@@ -113,10 +111,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp: number): boole
 userSchema.methods.createPasswordResetToken = function (): string {
     const resetToken = crypto.randomBytes(32).toString('hex');
 
-    this.passwordResetToken = crypto
-        .createHash('sha256')
-        .update(resetToken)
-        .digest('hex');
+    this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
     this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -124,4 +119,4 @@ userSchema.methods.createPasswordResetToken = function (): string {
 };
 
 // Define and export the User model
-export const User = model("User", userSchema);
+export const User = model('User', userSchema);

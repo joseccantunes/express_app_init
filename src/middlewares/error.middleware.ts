@@ -1,5 +1,6 @@
-import {NextFunction, Request, Response} from "express";
-import AppError from "../utility/appError";
+import { NextFunction, Request, Response } from 'express';
+
+import AppError from '../utility/appError';
 
 // Define the custom error interfaces
 interface ErrorWithStatusCode extends Error {
@@ -33,11 +34,9 @@ const handleValidationErrorDB = (err: ErrorWithStatusCode): AppError => {
     return new AppError(message, 400);
 };
 
-const handleJWTError = (): AppError =>
-    new AppError('Invalid token. Please log in again!', 401);
+const handleJWTError = (): AppError => new AppError('Invalid token. Please log in again!', 401);
 
-const handleJWTExpiredError = (): AppError =>
-    new AppError('Invalid token. Please log in again', 401);
+const handleJWTExpiredError = (): AppError => new AppError('Invalid token. Please log in again', 401);
 
 // Error responses
 const sendErrorDev = (err: ErrorWithStatusCode, req: Request, res: Response): void => {
@@ -67,7 +66,6 @@ const sendErrorProd = (err: ErrorWithStatusCode, req: Request, res: Response): v
     return;
 };
 
-
 const errorMiddleware = (err: ErrorWithStatusCode, req: Request, res: Response, next: NextFunction) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
@@ -75,7 +73,7 @@ const errorMiddleware = (err: ErrorWithStatusCode, req: Request, res: Response, 
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, req, res);
     } else {
-        let error = {...err} as ErrorWithStatusCode;
+        let error = { ...err } as ErrorWithStatusCode;
         error.message = err.message;
 
         if (error.name === 'CastError') error = handleCastErrorDB(error);
@@ -86,6 +84,6 @@ const errorMiddleware = (err: ErrorWithStatusCode, req: Request, res: Response, 
 
         sendErrorProd(error, req, res);
     }
-}
+};
 
 export default errorMiddleware;

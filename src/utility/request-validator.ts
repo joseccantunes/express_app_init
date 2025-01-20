@@ -1,61 +1,55 @@
-import { IUser } from "../models";
+import { IUser } from '../models';
 
 interface IError {
-  body?: string;
-  email?: string;
-  password?: string;
-  title?: string;
-  content?: string;
-  type?: string;
-  reviewContent?: string;
-  user?: string;
-  rate?: string;
-  userName?: string;
+    body?: string;
+    email?: string;
+    password?: string;
+    title?: string;
+    content?: string;
+    type?: string;
+    reviewContent?: string;
+    user?: string;
+    rate?: string;
+    userName?: string;
 }
 export class RequestValidation {
-  static isEmail(prop: string): boolean {
-    const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    return prop.match(regex) ? true : false;
-  }
-
-  static validUserRequest(prop: IUser): IError {
-    let error: IError = {};
-    if (!Object.keys(prop).length) {
-      error.body = "The request body cannot be empty";
-      return error;
+    static isEmail(prop: string): boolean {
+        const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        return prop.match(regex) ? true : false;
     }
-    Object.entries(prop).forEach(([key, value]) => {
-      if (key === "email" && !RequestValidation.isEmail(value)) {
-        error.email = "Provide a valid email";
-      }
-      if (key === "password" && value.length < 8) {
-        error.password = "Password length must be greater than 7";
-      }
 
-      if (key === "userName" && !value.length) {
-        error.userName = "username is required";
-      }
-    });
-    return error;
-  }
+    static validUserRequest(prop: IUser): IError {
+        let error: IError = {};
+        if (!Object.keys(prop).length) {
+            error.body = 'The request body cannot be empty';
+            return error;
+        }
+        Object.entries(prop).forEach(([key, value]) => {
+            if (key === 'email' && !RequestValidation.isEmail(value)) {
+                error.email = 'Provide a valid email';
+            }
+            if (key === 'password' && value.length < 8) {
+                error.password = 'Password length must be greater than 7';
+            }
 
-  static createAPIResponse(
-    success: boolean,
-    code: number,
-    message: string,
-    data: any,
-    request: { type: string; url: string }
-  ) {
-    return {
-      success,
-      code,
-      message,
-      data,
-      request,
-    };
-  }
+            if (key === 'userName' && !value.length) {
+                error.userName = 'username is required';
+            }
+        });
+        return error;
+    }
 
-/*
+    static createAPIResponse(success: boolean, code: number, message: string, data: any, request: { type: string; url: string }) {
+        return {
+            success,
+            code,
+            message,
+            data,
+            request,
+        };
+    }
+
+    /*
   static validateEventRequest(props: IEvent) {
     let error: IError = {};
     Object.entries(props).forEach(([value, key]) => {

@@ -1,9 +1,10 @@
-import catchAsync from "./catchAsync";
-import {AppRequest, JwtPayload} from "../types/types";
-import express from "express";
-import AppError from "./appError";
-import {IUser, User} from "../models";
-import jwt from "jsonwebtoken";
+import express from 'express';
+import jwt from 'jsonwebtoken';
+
+import { IUser, User } from '../models';
+import { AppRequest, JwtPayload } from '../types/types';
+import AppError from './appError';
+import catchAsync from './catchAsync';
 
 export const protect = catchAsync(async (req: AppRequest, resp: express.Response, next: express.NextFunction) => {
     // 1) Getting token and check of it's there
@@ -23,7 +24,7 @@ export const protect = catchAsync(async (req: AppRequest, resp: express.Response
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
 
     // 3) Check if user still exists
-    const currentUser = await User.findById(decoded.id) as IUser;
+    const currentUser = (await User.findById(decoded.id)) as IUser;
 
     if (!currentUser) {
         return next(new AppError('The user belonging to this token does no longer exist.', 401));

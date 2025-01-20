@@ -1,7 +1,8 @@
-import dotenv from "dotenv";
-import { App } from "./app";
-import { UserController } from "./controllers/userController";
-import {AuthController} from "./controllers/authController";
+import dotenv from 'dotenv';
+
+import { App } from './app';
+import { AuthController } from './controllers/authController';
+import { UserController } from './controllers/userController';
 
 dotenv.config();
 const port = process.env.PORT;

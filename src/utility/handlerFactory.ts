@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { Document, Model } from 'mongoose';
-import catchAsync from "./catchAsync";
-import AppError from "./appError";
-import APIFeatures from "./apiFeatures";
 
+import APIFeatures from './apiFeatures';
+import AppError from './appError';
+import catchAsync from './catchAsync';
 
 // Generic function for getting a single document by ID with optional population
 export const getOne = (Model: Model<Document>, popOptions?: string) =>
@@ -24,7 +24,6 @@ export const getOne = (Model: Model<Document>, popOptions?: string) =>
             data: doc,
         });
     });
-
 
 // Generic function for deleting a document by ID
 export const deleteOne = (Model: Model<Document>) =>
@@ -80,11 +79,7 @@ export const getAll = (Model: Model<Document>) =>
         let filter: Record<string, unknown> = {};
         if (req.params.tourId) filter = { tour: req.params.tourId };
 
-        const features = new APIFeatures(Model.find(filter), req.query)
-            .filter()
-            .sort()
-            .limitFields()
-            .paginate();
+        const features = new APIFeatures(Model.find(filter), req.query).filter().sort().limitFields().paginate();
 
         const doc = await features.query;
 
