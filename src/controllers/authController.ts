@@ -19,19 +19,19 @@ export class AuthController {
     }
 
     initRoutes() {
-        this.router.post(this.path + '/signup', this.signup);
-        this.router.post(this.path + '/login', this.login);
-        this.router.get(this.path + '/logout', this.logout);
+        this.router.post('/signup', this.signup);
+        this.router.post('/login', this.login);
+        this.router.get('/logout', this.logout);
 
-        this.router.post(this.path + '/forgotPassword', this.forgotPassword);
-        this.router.patch(this.path + '/resetPassword/:token', this.resetPassword);
+        this.router.post('/forgotPassword', this.forgotPassword);
+        this.router.patch('/resetPassword/:token', this.resetPassword);
 
         this.router.use(protect);
 
-        this.router.patch(this.path + '/updatePassword', this.updatePassword);
+        this.router.patch('/updatePassword', this.updatePassword);
         /*this.router.get(this.path, this.getUsers);
-        this.router.get(this.path + "/user", this.getUser);
-        this.router.post(this.path + "/authenticate", this.authenticateUser);
+        this.router.get("/user", this.getUser);
+        this.router.post("/authenticate", this.authenticateUser);
         this.router.delete(this.path, this.deleteUsers);*/
     }
 

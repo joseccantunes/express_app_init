@@ -83,8 +83,8 @@ export class App {
     }
 
     private initControllers(controllers: any) {
-        for (const controller of controllers) {
-            this.app.use('/api/', controller.router);
+        for (const c of controllers) {
+            this.app.use(`/api${c.path}`, c.router);
         }
     }
 

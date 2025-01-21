@@ -15,7 +15,7 @@ export class UserController {
 
     initRoutes() {
         this.router.use(protect);
-        this.router.get(this.path + '/me', this.getMe, this.getUser);
+        this.router.get('/me', this.getMe, this.getUser);
     }
 
     private getMe = (req: AppRequest, resp: express.Response, next: express.NextFunction) => {
