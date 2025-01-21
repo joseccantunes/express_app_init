@@ -1,8 +1,7 @@
-import crypto from 'crypto';
-
 import bcrypt from 'bcryptjs';
 import { Document, model, Query, Schema } from 'mongoose';
 import validator from 'validator';
+import crypto from 'crypto';
 
 // Define an interface for the User document
 export interface IUser extends Document {

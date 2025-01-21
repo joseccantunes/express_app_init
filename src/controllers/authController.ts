@@ -1,8 +1,7 @@
-import crypto from 'crypto';
-
 import * as express from 'express';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 import { IUser, User } from '../models';
 import { AppRequest } from '../types/types';
