@@ -1,12 +1,10 @@
-import * as express from 'express';
-import { NextFunction, Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 import { IUser, User } from '../models';
-import { AppRequest } from '../types/types';
+import { AppRequest, JwtPayload } from '../types/types';
 import AppError from '../utility/appError';
-import { protect } from '../utility/authorization';
 import catchAsync from '../utility/catchAsync';
 
 export class AuthController {
@@ -20,37 +18,38 @@ export class AuthController {
     initRoutes() {
         this.router.post('/signup', this.signup);
         this.router.post('/login', this.login);
-        this.router.get('/logout', this.logout);
+        this.router.post('/logout', this.logout);
 
         this.router.post('/forgotPassword', this.forgotPassword);
         this.router.patch('/resetPassword/:token', this.resetPassword);
 
-        this.router.use(protect);
-
         this.router.patch('/updatePassword', this.updatePassword);
-        /*this.router.get(this.path, this.getUsers);
-        this.router.get("/user", this.getUser);
-        this.router.post("/authenticate", this.authenticateUser);
-        this.router.delete(this.path, this.deleteUsers);*/
+        this.router.post('/refresh-token', this.refreshToken);
+
     }
 
-    signToken = (id: string) => {
-        return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-            expiresIn: process.env.JWT_EXPIRES_IN,
-        });
-    };
-
     createSendToken = (user: Partial<IUser>, statusCode: number, resp: Response) => {
-        const token = this.signToken(user._id as string);
-
         const cookieOptions: Record<string, any> = {
-            expires: new Date(Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN as string, 10) * 24 * 60 * 60 * 1000),
             httpOnly: true,
+            secure: false, // Set to true in production
+            sameSite: 'strict',
         };
 
         if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-        resp.cookie('jwt', token, cookieOptions);
+        const token = jwt.sign({ id: user.id } as JwtPayload, process.env.AUTH_ACCESS_TOKEN_SECRET, {
+            expiresIn: process.env.AUTH_ACCESS_TOKEN_EXPIRES_IN,
+        });
+
+        const refreshToken = jwt.sign({ id: user.id } as JwtPayload, process.env.AUTH_REFRESH_TOKEN_SECRET, {
+            expiresIn: process.env.AUTH_REFRESH_TOKEN_EXPIRES_IN,
+        });
+
+        // Send tokens as HTTP-only cookies
+        resp.cookie('refreshToken', refreshToken, {
+            ...cookieOptions,
+            path: '/api/auth/refresh-token', // Only sent to this endpoint
+        });
 
         // Remove password from output
         user.password = undefined;
@@ -64,8 +63,9 @@ export class AuthController {
         });
     };
 
-    signup = catchAsync(async (req: Request, resp: Response, next: NextFunction) => {
+    signup = catchAsync(async (req: AppRequest, resp: Response, next: NextFunction) => {
         await User.init();
+
         const newUser = await User.create({
             name: req.body.name,
             email: req.body.email,
@@ -79,7 +79,7 @@ export class AuthController {
         this.createSendToken(newUser, 201, resp);
     });
 
-    login = catchAsync(async (req: Request, resp: Response, next: NextFunction) => {
+    login = catchAsync(async (req: AppRequest, resp: Response, next: NextFunction) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -96,7 +96,7 @@ export class AuthController {
     });
 
     logout = (req: Request, resp: Response) => {
-        resp.cookie('jwt', 'loggedout', {
+        resp.cookie('refreshToken', 'loggedout', {
             expires: new Date(Date.now() + 10 * 1000),
             httpOnly: true,
         });
@@ -161,6 +161,24 @@ export class AuthController {
         user.password = req.body.password;
         user.passwordConfirm = req.body.passwordConfirm;
         await user.save();
+
+        this.createSendToken(user, 200, resp);
+    });
+
+    refreshToken = catchAsync(async (req: Request, resp: Response, next: NextFunction) => {
+        const refreshToken = req.cookies.refreshToken;
+
+        if (!refreshToken) {
+            return next(new AppError('No refresh token provided', 401));
+        }
+
+        const decoded = jwt.verify(refreshToken, process.env.AUTH_REFRESH_TOKEN_SECRET) as JwtPayload;
+
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+            return next(new AppError('User no longer exists', 401));
+        }
 
         this.createSendToken(user, 200, resp);
     });

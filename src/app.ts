@@ -9,7 +9,8 @@ import hpp from 'hpp';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
 
-import errorMiddleware from './middlewares/error.middleware';
+import { deviceMiddleware } from './middlewares/deviceMiddleware';
+import errorMiddleware from './middlewares/errorMiddleware';
 import AppError from './utility/appError';
 import deepSanitize from './utility/deepSanitize';
 
@@ -64,6 +65,7 @@ export class App {
         this.app.use(cookieParser());
         this.app.use(mongoSanitize());
         this.app.use(helmet());
+        this.app.use(deviceMiddleware);
 
         // Data sanitization against XSS
         this.app.use((req, res, next) => {

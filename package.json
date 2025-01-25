@@ -14,7 +14,6 @@
         "test:cov": "jest --coverage"
     },
     "dependencies": {
-        "bcrypt": "^5.1.1",
         "bcryptjs": "^2.4.3",
         "compression": "^1.7.5",
         "cookie-parser": "^1.4.7",
@@ -32,6 +31,7 @@
         "nodemailer": "^6.9.16",
         "sanitize-html": "^2.14.0",
         "typescript": "^5.7.3",
+        "ua-parser-js": "^2.0.0",
         "validator": "^13.12.0"
     },
     "devDependencies": {

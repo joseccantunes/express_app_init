@@ -12,8 +12,6 @@ export const protect = catchAsync(async (req: AppRequest, resp: express.Response
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies.jwt) {
-        token = req.cookies.jwt;
     }
 
     if (!token) {
@@ -21,7 +19,7 @@ export const protect = catchAsync(async (req: AppRequest, resp: express.Response
     }
 
     // 2) Verification token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+    const decoded = jwt.verify(token, process.env.AUTH_ACCESS_TOKEN_SECRET as string) as JwtPayload;
 
     // 3) Check if user still exists
     const currentUser = (await User.findById(decoded.id)) as IUser;
